@@ -19,6 +19,11 @@ require_relative "ask/decisions/decision_state"
 require_relative "ask/decisions/failure_classifier"
 require_relative "ask/decisions/loop_detector"
 require_relative "ask/decisions/confidence_policy"
+require_relative "ask/decisions/quality_judge"
+require_relative "ask/decisions/reflection_judge"
+require_relative "ask/decisions/tool_repairer"
+require_relative "ask/decisions/reranker"
+require_relative "ask/decisions/structured_state_loop"
 
 # The Decide tool requires ask-tools (Ask::Tool base class). Load conditionally
 # so the core gem works without a tools dependency.
