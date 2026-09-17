@@ -4,32 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.1.0] - 2026-09-18
+
+The first release, so everything here is new. It is a decision layer for the
+ask-rb ecosystem: ask Jev (or any System One model) typed questions and get
+back answers with calibrated probabilities. LLMs generate text; deciders
+decide.
 
 ### Added
+
 - `Ask::Decisions::Reader` — asks a described set of options as one Choice,
   with anything else the caller needs riding along in the same request.
-  `ToolRouter` and `Triage` are façades over it, so the two stop growing
-  apart while keeping names that say what each one is for.
+  `ToolRouter` and `Triage` are façades over it.
 - `Ask::Decisions::Triage` — reads a message into a caller-defined lane and
   asks the mood and whether the person wants a human, all in one request.
   Measured against a 19-tool roster: lane-level routing was right 19/20 where
   tool-level routing was right 10/16 — the tools overlapped, and a lane is the
   part of the decision the message actually carries.
-
-### Changed
-- `Ask::Decisions::ToolRouter` takes `criteria:` — routing-grade descriptions,
-  tool name to when to choose it — and a `limit:`. A tool's own description is
-  written for the model that already holds the tool, so two accurate
-  descriptions can still fail to separate their tools from the outside.
-- `Triage::Verdict#wants_human?` requires the probability to be *above* the
-  threshold. A noul at exactly 0.5 is the model saying it has no idea, which
-  is the one answer that must not read as consent.
-- Requires `ask-core >= 0.12.0` for the decision vocabulary.
-
-## [0.1.0] - 2026-09-17
-
-### Added
+- `Ask::Decisions::AgentAdapter` — wires `Gate`, `OutputJudge`,
+  `FailureClassifier`, `LoopDetector`, `QualityJudge`, `ReflectionJudge`,
+  `ToolRepairer` and `ConfidencePolicy` into ask-agent's `before_tool` /
+  `after_tool` hooks, so one config line activates the guard half:
+  `Ask::Agent.configure { |c| c.decision_provider = :typesafe }`.
 - `Ask::Decision::Choice`, `Score`, `Noul` primitives in ask-core
 - `Ask::DecisionResult::ChoiceAnswer`, `ScoreAnswer`, `NoulAnswer`, `Batch` in ask-core
 - `Ask::DecisionProvider` base class + registry in ask-core
@@ -58,3 +54,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `Ask.decide` and `Ask::Decisions.batch` convenience methods
 - Provider registry: `Ask::DecisionProvider.register`
 - `ask-tools` `param :enum` support (backward compatible)
+
+### Changed
+
+- `Ask::Decisions::ToolRouter` takes `criteria:` — routing-grade descriptions,
+  tool name to when to choose it — and a `limit:`. A tool's own description is
+  written for the model that already holds the tool, so two accurate
+  descriptions can still fail to separate their tools from the outside.
+- `Triage::Verdict#wants_human?` requires the probability to be *above* the
+  threshold. A noul at exactly 0.5 is the model saying it has no idea, which
+  is the one answer that must not read as consent.
+- Requires `ask-core >= 0.12.0` for the decision vocabulary.
