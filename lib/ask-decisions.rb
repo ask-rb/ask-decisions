@@ -14,6 +14,15 @@ require_relative "ask/decisions/lint"
 require_relative "ask/decisions/gate"
 require_relative "ask/decisions/output_judge"
 
+# The Decide tool requires ask-tools (Ask::Tool base class). Load conditionally
+# so the core gem works without a tools dependency.
+begin
+  require "ask-tools"
+  require_relative "ask/tools/decide"
+rescue LoadError
+  # ask-tools not loaded — Ask::Tools::Decide unavailable
+end
+
 # Register built-in providers.
 Ask::DecisionProvider.register(:typesafe, Ask::Decisions::Typesafe)
 Ask::DecisionProvider.register(:static,   Ask::Decisions::Static)
