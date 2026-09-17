@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.2.0] - 2026-09-17
+## [0.2.1] - 2026-09-17
 
 ### Added
 
@@ -30,6 +30,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **`AgentAdapter` passes the judgement through** — `gate_questions`,
   `output_questions`, `output_advice` — so a host configures the guards for its
   own tools in one place.
+
+### Notes
+
+- 0.2.0 is what it was released as: the router removal below, and the
+  host-owned judgement arrived after it.
+
+## [0.2.0] - 2026-09-17
 
 ### Removed
 
