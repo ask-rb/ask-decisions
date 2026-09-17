@@ -1,5 +1,9 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
 ## [0.2.0] - 2026-09-17
 
 ### Added
@@ -26,18 +30,6 @@
 - **`AgentAdapter` passes the judgement through** — `gate_questions`,
   `output_questions`, `output_advice` — so a host configures the guards for its
   own tools in one place.
-
-### Notes
-
-- The defaults are unchanged: with nothing supplied, a gate asks pi-jev's
-  questions with its thresholds, and the output judge judges `bash` with its
-  failure classes. Existing hosts are unaffected.
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-
-## [0.2.0] - 2026-09-18
 
 ### Removed
 
