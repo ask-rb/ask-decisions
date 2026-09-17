@@ -24,6 +24,8 @@ require_relative "ask/decisions/reflection_judge"
 require_relative "ask/decisions/tool_repairer"
 require_relative "ask/decisions/reranker"
 require_relative "ask/decisions/structured_state_loop"
+require_relative "ask/decisions/calibration_report"
+require_relative "ask/decisions/calibration_harness"
 
 # The Decide tool requires ask-tools (Ask::Tool base class). Load conditionally
 # so the core gem works without a tools dependency.
