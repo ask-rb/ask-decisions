@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- `Ask::Decisions::Reader` — asks a described set of options as one Choice,
+  with anything else the caller needs riding along in the same request.
+  `ToolRouter` and `Triage` are façades over it, so the two stop growing
+  apart while keeping names that say what each one is for.
 - `Ask::Decisions::Triage` — reads a message into a caller-defined lane and
   asks the mood and whether the person wants a human, all in one request.
   Measured against a 19-tool roster: lane-level routing was right 19/20 where

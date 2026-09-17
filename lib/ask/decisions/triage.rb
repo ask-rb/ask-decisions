@@ -88,6 +88,10 @@ module Ask
                       "Contact details, business hours, and product questions do not count as wanting a human."
       )
 
+      # The question the lanes answer.
+      DEFAULT_INSTRUCTIONS = "Which of these best describes what the person writing wants? " \
+                             "Choose by what they are asking for, not by how they phrase it."
+
       attr_reader :lanes
 
       # @param provider [Ask::DecisionProvider]
@@ -97,7 +101,7 @@ module Ask
       def initialize(provider, lanes:, instructions: nil, context_limit: 600)
         @provider = provider
         @lanes = lanes
-        @instructions = instructions || default_instructions
+        @instructions = instructions || DEFAULT_INSTRUCTIONS
         @context_limit = context_limit
       end
 
@@ -108,42 +112,43 @@ module Ask
       # @param model [String, nil] model override
       # @return [Verdict]
       def read(message:, context: nil, model: nil)
-        result = @provider.evaluate(state: build_state(message, context), decisions: questions, model: model)
-        lane = result["lane"]
-        sentiment = result["sentiment"]
-        human = result["wants_human"]
+        answers = reader.read(state: build_state(message, context), model: model)
+        lane = answers[reader.id]
 
         Verdict.new(
           lane: lane&.choice,
           confidence: lane&.confidence,
-          sentiment: sentiment&.score,
-          wants_human: human&.noul,
-          answers: { "lane" => lane, "sentiment" => sentiment, "wants_human" => human }
+          sentiment: answers["sentiment"]&.score,
+          wants_human: answers["wants_human"]&.noul,
+          answers: {
+            "lane" => lane,
+            "sentiment" => answers["sentiment"],
+            "wants_human" => answers["wants_human"]
+          }
         )
       end
 
       private
 
-      def questions
-        {
-          "lane" => Ask::Decision::Choice.new(instructions: @instructions, criteria: @lanes),
-          "sentiment" => SENTIMENT,
-          "wants_human" => WANTS_HUMAN
-        }
+      # The lane, the mood, and the want for a person — one request, because
+      # the questions are independent and the call costs the same either way.
+      def reader
+        @reader ||= Ask::Decisions::Reader.new(
+          @provider,
+          id: "lane",
+          instructions: @instructions,
+          options: @lanes,
+          also: {"sentiment" => SENTIMENT, "wants_human" => WANTS_HUMAN}
+        )
       end
 
       # The state is the message and a line of context. Longer state has
       # been measured to make Jev worse, not better — everything irrelevant
       # is a chance to misread what is relevant.
       def build_state(message, context)
-        state = { message: truncate(message, 2000) }
+        state = {message: truncate(message, 2000)}
         state[:context] = truncate(context, @context_limit) if context && !context.to_s.empty?
         state
-      end
-
-      def default_instructions
-        "Which of these best describes what the person writing wants? " \
-          "Choose by what they are asking for, not by how they phrase it."
       end
 
       def truncate(value, limit)

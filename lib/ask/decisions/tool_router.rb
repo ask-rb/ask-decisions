@@ -23,6 +23,11 @@ module Ask
         "none" => "No action needed; the turn is a follow-up or acknowledgment"
       }.freeze
 
+      # The question the roster answers. The ids in +criteria+ are the tool
+      # names, so the answer comes back as a tool the caller can run.
+      INSTRUCTIONS = "Which tool should the assistant use to handle the user's latest request? " \
+                     "If no tool is needed, pick answer_directly, ask_clarifying_question, or none."
+
       # @param provider [Ask::DecisionProvider]
       # @param tools [Array<Hash>] tool roster, each with "name" and "description"
       # @param none_threshold [Float] below this confidence, fall back to LLM
@@ -49,44 +54,42 @@ module Ask
       # @return [RouteResult]
       def route(user_turn:, recent_turns: nil, model: nil)
         state = build_state(user_turn: user_turn, recent_turns: recent_turns)
-        question = build_question
-        result = @provider.evaluate(
-          state: state,
-          decisions: { "tool.route" => question },
-          model: model
-        )
-        RouteResult.new(result["tool.route"])
+        RouteResult.new(reader.choice(reader.read(state: state, model: model)))
       end
 
       private
 
-      def build_state(user_turn:, recent_turns: nil)
-        state = { user_turn: user_turn }
-        state[:recent_turns] = truncate(recent_turns, 2000) if recent_turns
-        state
+      # The roster, as the options of one Choice question.
+      def reader
+        @reader ||= Ask::Decisions::Reader.new(
+          @provider,
+          id: "tool.route",
+          instructions: INSTRUCTIONS,
+          options: described_roster,
+          limit: @limit
+        )
       end
 
-      def build_question
-        criteria = {}
-        @tools.each do |t|
-          name = t[:name] || t["name"]
-          desc = @criteria&.dig(name) || @criteria&.dig(name.to_s) ||
-                 t[:description] || t["description"] || ""
-          criteria[name] = truncate(desc, @limit)
+      def described_roster
+        described = @tools.each_with_object({}) do |tool, options|
+          name = tool[:name] || tool["name"]
+          options[name] = @criteria&.dig(name) || @criteria&.dig(name.to_s) ||
+                          tool[:description] || tool["description"] || ""
         end
-        criteria.merge!(NON_TOOL_OUTCOMES)
+        described.merge(NON_TOOL_OUTCOMES)
+      end
 
-        Ask::Decision::Choice.new(
-          instructions: "Which tool should the assistant use to handle the user's latest request? " \
-                        "If no tool is needed, pick answer_directly, ask_clarifying_question, or none.",
-          criteria: criteria
-        )
+      def build_state(user_turn:, recent_turns: nil)
+        state = {user_turn: user_turn}
+        state[:recent_turns] = truncate(recent_turns, 2000) if recent_turns
+        state
       end
 
       def truncate(str, limit)
         return "" if str.nil?
         str.length > limit ? "#{str[0, limit]}…" : str
       end
+
 
       # Result of routing.
       class RouteResult
