@@ -37,6 +37,14 @@ rescue LoadError
   # ask-tools not loaded — Ask::Tools::Decide unavailable
 end
 
+# Load agent adapter when ask-agent is available.
+begin
+  require "ask/agent"
+  require_relative "ask/decisions/agent_adapter"
+rescue LoadError
+  # ask-agent not loaded — AgentAdapter unavailable
+end
+
 # Register built-in providers.
 Ask::DecisionProvider.register(:typesafe, Ask::Decisions::Typesafe)
 Ask::DecisionProvider.register(:static,   Ask::Decisions::Static)

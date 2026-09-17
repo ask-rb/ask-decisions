@@ -26,10 +26,19 @@ module Ask
       # @param provider [Ask::DecisionProvider]
       # @param tools [Array<Hash>] tool roster, each with "name" and "description"
       # @param none_threshold [Float] below this confidence, fall back to LLM
-      def initialize(provider, tools:, none_threshold: 0.5)
+      # @param criteria [Hash, nil] routing-grade descriptions, tool name =>
+      #   when to choose it. Worth supplying whenever the roster holds tools
+      #   that overlap: a tool's own description is written for the model that
+      #   already holds it, and two accurate descriptions can still fail to
+      #   separate their tools from the outside. Omitted, each tool's own
+      #   description is used.
+      # @param limit [Integer] characters kept per description
+      def initialize(provider, tools:, none_threshold: 0.5, criteria: nil, limit: 160)
         @provider = provider
         @tools = tools
         @none_threshold = none_threshold
+        @criteria = criteria
+        @limit = limit
       end
 
       # Route a user turn to a tool or non-tool outcome.
@@ -61,8 +70,9 @@ module Ask
         criteria = {}
         @tools.each do |t|
           name = t[:name] || t["name"]
-          desc = t[:description] || t["description"] || ""
-          criteria[name] = truncate(desc, 120)
+          desc = @criteria&.dig(name) || @criteria&.dig(name.to_s) ||
+                 t[:description] || t["description"] || ""
+          criteria[name] = truncate(desc, @limit)
         end
         criteria.merge!(NON_TOOL_OUTCOMES)
 

@@ -6,3 +6,4 @@ gemspec
 gem "ask-core", path: "../ask-core"
 gem "ask-auth", path: "../ask-auth"
 gem "ask-tools", path: "../ask-tools"
+gem "ask-agent", path: "../ask-agent"
