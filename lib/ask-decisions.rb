@@ -11,6 +11,8 @@ require_relative "ask/decisions/batcher"
 require_relative "ask/decisions/cache"
 require_relative "ask/decisions/static"
 require_relative "ask/decisions/lint"
+require_relative "ask/decisions/gate"
+require_relative "ask/decisions/output_judge"
 
 # Register built-in providers.
 Ask::DecisionProvider.register(:typesafe, Ask::Decisions::Typesafe)

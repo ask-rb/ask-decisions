@@ -68,6 +68,14 @@ module Ask
                "Consider adding one so the model can reject all options."
         end
 
+        # Derived questions — measured to overlap across phrasings
+        # ("is it safe to run this again unchanged" → 0.73–0.96 vs 0.37–0.66, ambiguous).
+        # Derive the answer from a classification instead.
+        if instructions.match?(/\b(is it safe to|can this be|should this be retried|is it okay to run again)\b/i)
+          w << "#{id}: question asks what code can derive from a classification. " \
+               "Ask the primitive (e.g. failure_class) and derive advice in code."
+        end
+
         w
       end
     end
