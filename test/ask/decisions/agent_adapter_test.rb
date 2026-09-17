@@ -120,3 +120,53 @@ class Ask::Decisions::AgentAdapterTest < Minitest::Test
     assert decision.act? || decision.review? || decision.escalate?
   end
 end
+
+# The adapter is where a host configures the guards for its own tools, so the
+# judgement it passes in has to reach the components that judge.
+class Ask::Decisions::AdapterJudgementTest < Minitest::Test
+  QUESTIONS = {
+    commits_the_customer: Ask::Decision::Noul.new(
+      instructions: "Does this commit the customer to an appointment?"
+    )
+  }.freeze
+
+  def test_the_hosts_gate_questions_reach_the_gate
+    adapter = Ask::Decisions::AgentAdapter.new(
+      :static, gate_questions: QUESTIONS, gate_thresholds: {commits_the_customer: 0.9},
+      gate_tools: ["book_appointment"]
+    )
+
+    assert_equal QUESTIONS.keys, adapter.gate.instance_variable_get(:@questions).keys
+    assert_equal ["book_appointment"], adapter.gate.instance_variable_get(:@tools)
+  end
+
+  def test_the_hosts_output_questions_and_advice_reach_the_judge
+    advice = {"no_such_thing" => "Say plainly the business does not offer that."}
+    questions = {
+      leaks_secret: Ask::Decision::Noul.new(instructions: "Does this leak someone's data?"),
+      failure_class: Ask::Decision::Choice.new(
+        instructions: "What happened?", criteria: {"no_failure" => "It worked"}
+      )
+    }
+
+    adapter = Ask::Decisions::AgentAdapter.new(
+      :static, output_questions: questions, output_advice: advice,
+      output_tools: ["book_appointment"]
+    )
+
+    judge = adapter.output_judge
+    assert_equal questions.keys, judge.instance_variable_get(:@questions).keys
+    assert_equal advice, judge.instance_variable_get(:@advice)
+    assert_equal ["book_appointment"], judge.instance_variable_get(:@tools)
+  end
+
+  # With nothing supplied the gem's own defaults stand, so an existing host is
+  # unaffected by the host-owned judgement arriving.
+  def test_the_defaults_still_stand
+    adapter = Ask::Decisions::AgentAdapter.new(:static)
+
+    assert_equal Ask::Decisions::Gate::QUESTIONS.keys,
+      adapter.gate.instance_variable_get(:@questions).keys
+    assert_equal ["bash"], adapter.output_judge.instance_variable_get(:@tools)
+  end
+end

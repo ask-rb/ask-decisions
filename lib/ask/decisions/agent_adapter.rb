@@ -106,12 +106,25 @@ module Ask
         Ask::Decisions.resolve_provider(name)
       end
 
+      # What the host judges, and how high the bar is. The questions are the
+      # host's because risk is: a booking tool and a shell tool are not
+      # dangerous for the same reason, and a gate written for one says nothing
+      # useful about the other.
       def gate_config
-        { tools: @config[:gate_tools], thresholds: @config[:gate_thresholds] || {} }.compact
+        {
+          questions: @config[:gate_questions],
+          thresholds: @config[:gate_thresholds],
+          tools: @config[:gate_tools]
+        }.compact
       end
 
       def output_judge_config
-        { tools: @config[:output_tools], output_limit: @config[:output_limit] }.compact
+        {
+          questions: @config[:output_questions],
+          advice: @config[:output_advice],
+          tools: @config[:output_tools],
+          output_limit: @config[:output_limit]
+        }.compact
       end
 
       def failure_classifier_config

@@ -49,11 +49,20 @@ module Ask
       }.freeze
 
       # @param provider [Ask::DecisionProvider] the decision provider to use
-      # @param thresholds [Hash] override specific thresholds
+      # @param questions [Hash{Symbol => Decision::Noul,Decision::Score}] what
+      #   to ask about a call. The defaults above are pi-jev's, written for a
+      #   coding agent's tools; a host with other tools should say what risk
+      #   means for them ("does this commit the customer to a booking?", "does
+      #   this spend the owner's money?") rather than inherit a vocabulary
+      #   about shell commands.
+      # @param thresholds [Hash{Symbol => Numeric}] the bar for each question.
+      #   Every question needs one: a question with no threshold can never
+      #   flag, and a gate that looks armed and never fires is worse than none.
       # @param tools [Array<String>, nil] tools to gate (nil = all)
-      def initialize(provider, thresholds: {}, tools: nil)
+      def initialize(provider, questions: QUESTIONS, thresholds: DEFAULT_THRESHOLDS, tools: nil)
         @provider = provider
-        @thresholds = DEFAULT_THRESHOLDS.merge(thresholds)
+        @questions = questions
+        @thresholds = arming_thresholds(questions, thresholds)
         @tools = tools
       end
 
@@ -71,13 +80,34 @@ module Ask
 
         result = @provider.evaluate(
           state: state,
-          decisions: QUESTIONS
+          decisions: @questions
         )
 
         Verdict.new(result, @thresholds)
       end
 
       private
+
+      # Every question must be armed. A host that supplies its own questions
+      # and forgets a threshold would otherwise get a gate that silently
+      # ignores one of its own risk questions, which is the failure mode a
+      # gate exists to prevent.
+      #
+      # A threshold given for a question the defaults also ask keeps the rest
+      # of the defaults, so raising one bar is one line rather than a copy of
+      # the table.
+      def arming_thresholds(questions, thresholds)
+        keys = questions.keys.map(&:to_sym)
+        armed = DEFAULT_THRESHOLDS.slice(*keys).merge(thresholds.to_h.transform_keys(&:to_sym))
+        unarmed = keys - armed.keys
+
+        unless unarmed.empty?
+          raise ArgumentError,
+            "no threshold for #{unarmed.inspect}: a question that cannot fire is not a gate"
+        end
+
+        armed
+      end
 
       def build_state(tool:, args:, working_dir: nil, user_message: nil)
         {

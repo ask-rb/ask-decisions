@@ -112,3 +112,74 @@ class Ask::Decisions::GateTest < Minitest::Test
     assert verdict.passed?
   end
 end
+
+# The host owns the judgement: what risk means is a property of the host's
+# tools, not of the gem. A booking tool and a shell tool are not dangerous for
+# the same reason, and the questions written for one say nothing useful about
+# the other.
+class Ask::Decisions::GateQuestionsTest < Minitest::Test
+  # A host's own questions, in the host's own words.
+  QUESTIONS = {
+    commits_the_customer: Ask::Decision::Noul.new(
+      instructions: "Does this commit the customer to an appointment?"
+    ),
+    spends_the_owners_money: Ask::Decision::Noul.new(
+      instructions: "Does this spend the owner's money?"
+    )
+  }.freeze
+
+  def provider(answers)
+    Ask::Decisions::Static.new(answers: answers)
+  end
+
+  def test_the_hosts_questions_are_what_gets_asked
+    asks = nil
+    provider = Object.new
+    provider.define_singleton_method(:evaluate) do |state:, decisions:|
+      asks = decisions.keys
+      Ask::DecisionResult::Batch.new(answers: {})
+    end
+
+    Ask::Decisions::Gate.new(
+      provider,
+      questions: QUESTIONS,
+      thresholds: {commits_the_customer: 0.9, spends_the_owners_money: 0.9}
+    ).judge(tool: "book_appointment", args: {time: "10:00"})
+
+    assert_equal %i[commits_the_customer spends_the_owners_money], asks
+  end
+
+  def test_the_hosts_threshold_decides
+    gate = Ask::Decisions::Gate.new(
+      provider(
+        "commits_the_customer" => Ask::DecisionResult::NoulAnswer.new(id: "commits_the_customer", noul: 0.95),
+        "spends_the_owners_money" => Ask::DecisionResult::NoulAnswer.new(id: "spends_the_owners_money", noul: 0.10)
+      ),
+      questions: QUESTIONS,
+      thresholds: {commits_the_customer: 0.9, spends_the_owners_money: 0.9}
+    )
+
+    verdict = gate.judge(tool: "book_appointment", args: {})
+
+    assert verdict.flagged?
+    assert_equal [:commits_the_customer], verdict.flagged
+  end
+
+  # A gate that looks armed and never fires is worse than no gate: the host
+  # must say how high the bar is for every question it asks.
+  def test_a_question_with_no_threshold_is_refused
+    error = assert_raises(ArgumentError) do
+      Ask::Decisions::Gate.new(provider({}), questions: QUESTIONS, thresholds: {commits_the_customer: 0.9})
+    end
+
+    assert_includes error.message, "spends_the_owners_money"
+    assert_includes error.message, "not a gate"
+  end
+
+  # The gem's own defaults still arm every one of its questions.
+  def test_the_default_questions_are_armed
+    gate = Ask::Decisions::Gate.new(provider({}))
+
+    assert gate.judge(tool: "bash", args: {}).passed?
+  end
+end

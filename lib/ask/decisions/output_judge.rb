@@ -46,12 +46,35 @@ module Ask
       }.freeze
 
       # @param provider [Ask::DecisionProvider]
-      # @param tools [Array<String>, nil] tools to judge (nil = ["bash"])
+      # The class that means nothing went wrong. A host's outcome question has
+      # to offer it, because the judge runs after every judged call and not
+      # only after a suspicious one: without it, every successful call would
+      # read as a failure.
+      SUCCESS_CLASS = "no_failure"
+
+      # A host judges two things about an output: whether it leaked something
+      # (`:leaks_secret`), and what happened (`:failure_class`). Those two ids
+      # are the gem's contract and stay fixed; the questions' words, the
+      # classes they can answer with, and the advice per class are the host's —
+      # a coding agent's failures are code bugs and broken environments, a
+      # business's are "we don't offer that" and "the system is down".
+      #
+      # @param questions [Hash{Symbol => Decision}] what to ask about a result.
+      #   Must answer under :leaks_secret and :failure_class, and the outcome
+      #   question must offer the class above among its criteria.
+      # @param advice [Hash{String => String,nil}] one line per class the
+      #   outcome question can answer with. A class with no line is advice the
+      #   model does not get.
+      # @param tools [Array<String>, nil] tools to judge (nil = the gem's own
+      #   default, the coding agent's shell tool — pass the host's own)
       # @param leak_threshold [Float] noul threshold for leak detection
       # @param failure_threshold [Float] confidence threshold for failure classification
       # @param output_limit [Integer] max characters of output to send
-      def initialize(provider, tools: nil, leak_threshold: 0.90, failure_threshold: 0.60, output_limit: 2000)
+      def initialize(provider, questions: QUESTIONS, advice: ADVICE, tools: nil,
+        leak_threshold: 0.90, failure_threshold: 0.60, output_limit: 2000)
         @provider = provider
+        @questions = judgeable(questions)
+        @advice = advice
         @tools = tools || ["bash"]
         @leak_threshold = leak_threshold
         @failure_threshold = failure_threshold
@@ -70,11 +93,31 @@ module Ask
         truncated = truncate(output, @output_limit)
         state = { output: truncated, tool_arguments: truncate_values(args, 400) }
 
-        result = @provider.evaluate(state: state, decisions: QUESTIONS)
-        OutputResult.new(result, @leak_threshold, @failure_threshold)
+        result = @provider.evaluate(state: state, decisions: @questions)
+        OutputResult.new(result, @leak_threshold, @failure_threshold, advice: @advice)
       end
 
       private
+
+      # A host's questions have to answer the two things the result reads, and
+      # the outcome question has to be able to say that nothing went wrong.
+      # Both are silent failures otherwise — a judge that reads nothing judges
+      # nothing — so they are refused at construction instead.
+      def judgeable(questions)
+        missing = %i[leaks_secret failure_class] - questions.keys.map(&:to_sym)
+        unless missing.empty?
+          raise ArgumentError, "the output judge needs questions for #{missing.inspect}"
+        end
+
+        criteria = Array(questions[:failure_class].criteria&.keys)
+        unless criteria.include?(SUCCESS_CLASS)
+          raise ArgumentError,
+            "the failure_class question must offer #{SUCCESS_CLASS.inspect} among its criteria, " \
+            "or every successful call reads as a failure"
+        end
+
+        questions
+      end
 
       def truncate(str, limit)
         return "" if str.nil?
@@ -91,17 +134,17 @@ module Ask
       class OutputResult
         attr_reader :leak_noul, :failure_class, :failure_confidence, :advice
 
-        def initialize(batch, leak_threshold, failure_threshold)
+        def initialize(batch, leak_threshold, failure_threshold, advice: ADVICE)
           leak_answer = batch["leaks_secret"]
           failure_answer = batch["failure_class"]
 
           @leak_noul = leak_answer&.noul || 0.0
           @leak_threshold = leak_threshold
 
-          @failure_class = failure_answer&.choice || "no_failure"
+          @failure_class = failure_answer&.choice || SUCCESS_CLASS
           @failure_confidence = failure_answer&.confidence || 0.0
           @failure_threshold = failure_threshold
-          @advice = ADVICE[@failure_class]
+          @advice = advice[@failure_class]
         end
 
         def leak?
@@ -109,7 +152,7 @@ module Ask
         end
 
         def failure?
-          @failure_class != "no_failure" && @failure_confidence >= @failure_threshold
+          @failure_class != SUCCESS_CLASS && @failure_confidence >= @failure_threshold
         end
 
         def to_s
