@@ -1,0 +1,43 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":"I was charged twice for order A-104.","model":"jev-latest","questions":{"route":{"type":"choice","instructions":"Which
+        team should handle this?","criteria":{"billing":"Payment or subscription issues","technical":"Bugs,
+        outages, or integration failures","sales":"Pricing or account questions"}}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:02:51 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '204'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b08924077cb499287ce7c0e2f0b1
+      X-Envoy-Upstream-Service-Time:
+      - '51'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"route":{"type":"choice","choice":"billing","confidence":1.0,"probabilities":{"technical":0.0,"billing":1.0,"sales":0.0}}},"usage":{"input_tokens":345,"output_tokens":38}}'
+  recorded_at: Thu, 17 Sep 2026 18:02:52 GMT
+recorded_with: VCR 6.4.0

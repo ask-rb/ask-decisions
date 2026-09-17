@@ -1,0 +1,57 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":{"query":"How do I reset my password?","passages":[{"id":"doc1","text":"To
+        reset your password, go to Settings > Security > Change Password."},{"id":"doc2","text":"Our
+        pricing plans start at $9/month for the basic tier."},{"id":"doc3","text":"Password
+        reset instructions: visit the login page and click Forgot Password."}]},"model":"jev-latest","questions":{"rel_doc1":{"type":"score","instructions":"How
+        relevant is this passage to answering the query?","criteria":["Not relevant
+        — unrelated to the query","Marginally relevant — shares some keywords but
+        doesn''t address the query","Relevant — partially answers the query","Highly
+        relevant — directly answers the query"]},"rel_doc2":{"type":"score","instructions":"How
+        relevant is this passage to answering the query?","criteria":["Not relevant
+        — unrelated to the query","Marginally relevant — shares some keywords but
+        doesn''t address the query","Relevant — partially answers the query","Highly
+        relevant — directly answers the query"]},"rel_doc3":{"type":"score","instructions":"How
+        relevant is this passage to answering the query?","criteria":["Not relevant
+        — unrelated to the query","Marginally relevant — shares some keywords but
+        doesn''t address the query","Relevant — partially answers the query","Highly
+        relevant — directly answers the query"]}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:02:56 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '1133'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b08933a172a7b0653881b033c95e
+      X-Envoy-Upstream-Service-Time:
+      - '68'
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        eyJtb2RlbCI6Impldi0xLjEzLjAiLCJhbnN3ZXJzIjp7InJlbF9kb2MxIjp7InR5cGUiOiJzY29yZSIsInNjb3JlIjoyLjgzLCJjb25maWRlbmNlIjowLjgzLCJsZWdlbmQiOnsiMCI6Ik5vdCByZWxldmFudCDigJQgdW5yZWxhdGVkIHRvIHRoZSBxdWVyeSIsIjEiOiJNYXJnaW5hbGx5IHJlbGV2YW50IOKAlCBzaGFyZXMgc29tZSBrZXl3b3JkcyBidXQgZG9lc24ndCBhZGRyZXNzIHRoZSBxdWVyeSIsIjIiOiJSZWxldmFudCDigJQgcGFydGlhbGx5IGFuc3dlcnMgdGhlIHF1ZXJ5IiwiMyI6IkhpZ2hseSByZWxldmFudCDigJQgZGlyZWN0bHkgYW5zd2VycyB0aGUgcXVlcnkifSwicHJvYmFiaWxpdGllcyI6eyIwIjowLjA0LCIxIjowLjAxLCIyIjowLjA0LCIzIjowLjkxfX0sInJlbF9kb2MyIjp7InR5cGUiOiJzY29yZSIsInNjb3JlIjoyLjgsImNvbmZpZGVuY2UiOjAuOCwibGVnZW5kIjp7IjAiOiJOb3QgcmVsZXZhbnQg4oCUIHVucmVsYXRlZCB0byB0aGUgcXVlcnkiLCIxIjoiTWFyZ2luYWxseSByZWxldmFudCDigJQgc2hhcmVzIHNvbWUga2V5d29yZHMgYnV0IGRvZXNuJ3QgYWRkcmVzcyB0aGUgcXVlcnkiLCIyIjoiUmVsZXZhbnQg4oCUIHBhcnRpYWxseSBhbnN3ZXJzIHRoZSBxdWVyeSIsIjMiOiJIaWdobHkgcmVsZXZhbnQg4oCUIGRpcmVjdGx5IGFuc3dlcnMgdGhlIHF1ZXJ5In0sInByb2JhYmlsaXRpZXMiOnsiMCI6MC4wNCwiMSI6MC4wMSwiMiI6MC4wNiwiMyI6MC44OX19LCJyZWxfZG9jMyI6eyJ0eXBlIjoic2NvcmUiLCJzY29yZSI6Mi43OCwiY29uZmlkZW5jZSI6MC43OCwibGVnZW5kIjp7IjAiOiJOb3QgcmVsZXZhbnQg4oCUIHVucmVsYXRlZCB0byB0aGUgcXVlcnkiLCIxIjoiTWFyZ2luYWxseSByZWxldmFudCDigJQgc2hhcmVzIHNvbWUga2V5d29yZHMgYnV0IGRvZXNuJ3QgYWRkcmVzcyB0aGUgcXVlcnkiLCIyIjoiUmVsZXZhbnQg4oCUIHBhcnRpYWxseSBhbnN3ZXJzIHRoZSBxdWVyeSIsIjMiOiJIaWdobHkgcmVsZXZhbnQg4oCUIGRpcmVjdGx5IGFuc3dlcnMgdGhlIHF1ZXJ5In0sInByb2JhYmlsaXRpZXMiOnsiMCI6MC4wNSwiMSI6MC4wMiwiMiI6MC4wNSwiMyI6MC44OH19fSwidXNhZ2UiOnsiaW5wdXRfdG9rZW5zIjo2MTYsIm91dHB1dF90b2tlbnMiOjQ5fX0=
+  recorded_at: Thu, 17 Sep 2026 18:02:56 GMT
+recorded_with: VCR 6.4.0

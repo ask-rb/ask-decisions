@@ -1,0 +1,42 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":"Help! My payouts have been failing for 3 days.","model":"jev-latest","questions":{"urgent":{"type":"noul","instructions":"Does
+        this message express urgency?"}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:03:00 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '119'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b089440d7aebae790b622a22fc6a
+      X-Envoy-Upstream-Service-Time:
+      - '70'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"urgent":{"type":"noul","noul":0.95}},"usage":{"input_tokens":284,"output_tokens":20}}'
+  recorded_at: Thu, 17 Sep 2026 18:03:00 GMT
+recorded_with: VCR 6.4.0

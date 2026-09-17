@@ -1,0 +1,59 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":{"request":"What is the capital of France?","response":"The
+        capital of France is Paris."},"model":"jev-latest","questions":{"accuracy":{"type":"score","instructions":"Is
+        the answer factually correct and free of hallucinations?","criteria":["Poor
+        — factually wrong, incomplete, or unclear","Fair — partially correct but missing
+        key aspects","Good — correct and complete, minor issues only","Excellent —
+        thorough, accurate, and well-presented"]},"completeness":{"type":"score","instructions":"Does
+        the answer fully address the user''s request?","criteria":["Poor — factually
+        wrong, incomplete, or unclear","Fair — partially correct but missing key aspects","Good
+        — correct and complete, minor issues only","Excellent — thorough, accurate,
+        and well-presented"]},"clarity":{"type":"score","instructions":"Is the answer
+        clear, well-organized, and easy to understand?","criteria":["Poor — factually
+        wrong, incomplete, or unclear","Fair — partially correct but missing key aspects","Good
+        — correct and complete, minor issues only","Excellent — thorough, accurate,
+        and well-presented"]},"verdict":{"type":"choice","instructions":"Should this
+        response be accepted, revised, or blocked?","criteria":{"accept":"The response
+        is good enough to deliver to the user","revise":"The response has issues that
+        can be fixed with minor edits","block":"The response is fundamentally wrong
+        or harmful and must be regenerated"}}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:02:46 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '1244'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b08910a47b68ba517084832e4eba
+      X-Envoy-Upstream-Service-Time:
+      - '81'
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        eyJtb2RlbCI6Impldi0xLjEzLjAiLCJhbnN3ZXJzIjp7ImFjY3VyYWN5Ijp7InR5cGUiOiJzY29yZSIsInNjb3JlIjoyLjY5LCJjb25maWRlbmNlIjowLjY5LCJsZWdlbmQiOnsiMCI6IlBvb3Ig4oCUIGZhY3R1YWxseSB3cm9uZywgaW5jb21wbGV0ZSwgb3IgdW5jbGVhciIsIjEiOiJGYWlyIOKAlCBwYXJ0aWFsbHkgY29ycmVjdCBidXQgbWlzc2luZyBrZXkgYXNwZWN0cyIsIjIiOiJHb29kIOKAlCBjb3JyZWN0IGFuZCBjb21wbGV0ZSwgbWlub3IgaXNzdWVzIG9ubHkiLCIzIjoiRXhjZWxsZW50IOKAlCB0aG9yb3VnaCwgYWNjdXJhdGUsIGFuZCB3ZWxsLXByZXNlbnRlZCJ9LCJwcm9iYWJpbGl0aWVzIjp7IjAiOjAuMCwiMSI6MC4wLCIyIjowLjMsIjMiOjAuN319LCJjb21wbGV0ZW5lc3MiOnsidHlwZSI6InNjb3JlIiwic2NvcmUiOjIuNjksImNvbmZpZGVuY2UiOjAuNjksImxlZ2VuZCI6eyIwIjoiUG9vciDigJQgZmFjdHVhbGx5IHdyb25nLCBpbmNvbXBsZXRlLCBvciB1bmNsZWFyIiwiMSI6IkZhaXIg4oCUIHBhcnRpYWxseSBjb3JyZWN0IGJ1dCBtaXNzaW5nIGtleSBhc3BlY3RzIiwiMiI6Ikdvb2Qg4oCUIGNvcnJlY3QgYW5kIGNvbXBsZXRlLCBtaW5vciBpc3N1ZXMgb25seSIsIjMiOiJFeGNlbGxlbnQg4oCUIHRob3JvdWdoLCBhY2N1cmF0ZSwgYW5kIHdlbGwtcHJlc2VudGVkIn0sInByb2JhYmlsaXRpZXMiOnsiMCI6MC4wLCIxIjowLjAsIjIiOjAuMywiMyI6MC43fX0sImNsYXJpdHkiOnsidHlwZSI6InNjb3JlIiwic2NvcmUiOjIuNjUsImNvbmZpZGVuY2UiOjAuNjUsImxlZ2VuZCI6eyIwIjoiUG9vciDigJQgZmFjdHVhbGx5IHdyb25nLCBpbmNvbXBsZXRlLCBvciB1bmNsZWFyIiwiMSI6IkZhaXIg4oCUIHBhcnRpYWxseSBjb3JyZWN0IGJ1dCBtaXNzaW5nIGtleSBhc3BlY3RzIiwiMiI6Ikdvb2Qg4oCUIGNvcnJlY3QgYW5kIGNvbXBsZXRlLCBtaW5vciBpc3N1ZXMgb25seSIsIjMiOiJFeGNlbGxlbnQg4oCUIHRob3JvdWdoLCBhY2N1cmF0ZSwgYW5kIHdlbGwtcHJlc2VudGVkIn0sInByb2JhYmlsaXRpZXMiOnsiMCI6MC4wLCIxIjowLjAsIjIiOjAuMzUsIjMiOjAuNjV9fSwidmVyZGljdCI6eyJ0eXBlIjoiY2hvaWNlIiwiY2hvaWNlIjoiYWNjZXB0IiwiY29uZmlkZW5jZSI6MS4wLCJwcm9iYWJpbGl0aWVzIjp7InJldmlzZSI6MC4wLCJhY2NlcHQiOjEuMCwiYmxvY2siOjAuMH19fSwidXNhZ2UiOnsiaW5wdXRfdG9rZW5zIjo2MzIsIm91dHB1dF90b2tlbnMiOjgzfX0=
+  recorded_at: Thu, 17 Sep 2026 18:02:47 GMT
+recorded_with: VCR 6.4.0

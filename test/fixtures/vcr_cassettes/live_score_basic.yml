@@ -1,0 +1,44 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":"This is unacceptable! I''ve been waiting 3 weeks!","model":"jev-latest","questions":{"frustration":{"type":"score","instructions":"How
+        frustrated the customer appears?","criteria":["Calm, just stating facts","Frustrated
+        but civil","Very angry, strong language"]}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:02:59 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '291'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b0893fd971f4ad53fd141bcae5db
+      X-Envoy-Upstream-Service-Time:
+      - '94'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"frustration":{"type":"score","score":1.71,"confidence":0.57,"legend":{"0":"Calm,
+        just stating facts","1":"Frustrated but civil","2":"Very angry, strong language"},"probabilities":{"0":0.0,"1":0.28,"2":0.72}}},"usage":{"input_tokens":321,"output_tokens":19}}'
+  recorded_at: Thu, 17 Sep 2026 18:02:59 GMT
+recorded_with: VCR 6.4.0

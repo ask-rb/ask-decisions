@@ -1,0 +1,45 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":"Help! My payouts are failing.","model":"jev-latest","questions":{"route":{"type":"choice","instructions":"Which
+        team?","criteria":{"billing":"Payments","technical":"Bugs","sales":"Pricing"}},"urgent":{"type":"noul","instructions":"Is
+        this urgent?"},"frustration":{"type":"score","instructions":"How frustrated?","criteria":["Calm","Frustrated","Very
+        angry"]}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:02:47 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '406'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b08914587271b31c7132750ce58a
+      X-Envoy-Upstream-Service-Time:
+      - '94'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"route":{"type":"choice","choice":"billing","confidence":0.98,"probabilities":{"billing":0.99,"technical":0.01,"sales":0.0}},"urgent":{"type":"noul","noul":0.85},"frustration":{"type":"score","score":1.02,"confidence":0.96,"legend":{"0":"Calm","1":"Frustrated","2":"Very
+        angry"},"probabilities":{"0":0.0,"1":0.98,"2":0.02}}},"usage":{"input_tokens":373,"output_tokens":70}}'
+  recorded_at: Thu, 17 Sep 2026 18:02:48 GMT
+recorded_with: VCR 6.4.0

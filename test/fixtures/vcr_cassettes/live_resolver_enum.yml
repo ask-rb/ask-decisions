@@ -1,0 +1,43 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":{"tool_name":"linear.create_issue","user_turn":"create a bug
+        in the eng team about login failures"},"model":"jev-latest","questions":{"team":{"type":"choice","instructions":"What
+        value should the `team` parameter be for linear.create_issue?","criteria":{"eng":"eng","design":"design","growth":"growth"}}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:02:51 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '193'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b0891fe077d8a1c0b7e544d443de
+      X-Envoy-Upstream-Service-Time:
+      - '69'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"team":{"type":"choice","choice":"eng","confidence":1.0,"probabilities":{"growth":0.0,"design":0.0,"eng":1.0}}},"usage":{"input_tokens":354,"output_tokens":38}}'
+  recorded_at: Thu, 17 Sep 2026 18:02:51 GMT
+recorded_with: VCR 6.4.0

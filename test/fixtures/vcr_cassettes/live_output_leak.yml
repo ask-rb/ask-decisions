@@ -1,0 +1,50 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":{"output":"TOKEN=sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234\nDB_PASSWORD=supersecretpassword123!","tool_arguments":{"command":"env"}},"model":"jev-latest","questions":{"leaks_secret":{"type":"noul","instructions":"Does
+        this output contain a secret, credential, private key, or access token?"},"failure_class":{"type":"choice","instructions":"What
+        kind of failure is this?","criteria":{"no_failure":"The command succeeded
+        or produced normal output","transient":"A temporary error — network timeout,
+        rate limit, DNS hiccup. Safe to retry unchanged.","environment":"A missing
+        dependency, wrong version, port in use, or wrong permissions on a file. Fix
+        the environment before retrying.","code_bug":"A type error, syntax error,
+        assertion failure, or test failure in the code itself. The code must change.","permission":"Access
+        denied, insufficient privileges. Do not retry without elevated permissions.","user_error":"Bad
+        invocation, wrong arguments, or incorrect usage by the caller."}}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:03:17 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '321'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b08985a27e31987e9f5415520276
+      X-Envoy-Upstream-Service-Time:
+      - '141'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"leaks_secret":{"type":"noul","noul":0.99},"failure_class":{"type":"choice","choice":"no_failure","confidence":0.8,"probabilities":{"transient":0.0,"user_error":0.09,"environment":0.04,"code_bug":0.02,"permission":0.01,"no_failure":0.84}}},"usage":{"input_tokens":553,"output_tokens":83}}'
+  recorded_at: Thu, 17 Sep 2026 18:03:17 GMT
+recorded_with: VCR 6.4.0

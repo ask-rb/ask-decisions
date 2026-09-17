@@ -1,0 +1,47 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":{"user_turn":"what is 2+2?"},"model":"jev-latest","questions":{"tool.route":{"type":"choice","instructions":"Which
+        tool should the assistant use to handle the user''s latest request? If no
+        tool is needed, pick answer_directly, ask_clarifying_question, or none.","criteria":{"bash":"Run
+        a shell command","read":"Read a file","answer_directly":"Answer the user directly
+        without calling any tool","ask_clarifying_question":"Ask the user a clarifying
+        question before acting","none":"No action needed; the turn is a follow-up
+        or acknowledgment"}}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:02:57 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '260'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b08937887d88a396675f6235c6e3
+      X-Envoy-Upstream-Service-Time:
+      - '100'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"tool.route":{"type":"choice","choice":"answer_directly","confidence":1.0,"probabilities":{"bash":0.0,"ask_clarifying_question":0.0,"none":0.0,"answer_directly":1.0,"read":0.0}}},"usage":{"input_tokens":428,"output_tokens":66}}'
+  recorded_at: Thu, 17 Sep 2026 18:02:57 GMT
+recorded_with: VCR 6.4.0

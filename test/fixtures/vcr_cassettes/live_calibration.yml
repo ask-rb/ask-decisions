@@ -1,0 +1,81 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":"Help! My server is down!","model":"jev-latest","questions":{"urgent":{"type":"noul","instructions":"Is
+        this message urgent?"}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:02:53 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '119'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b0892ba47771bf6cf64642c477b8
+      X-Envoy-Upstream-Service-Time:
+      - '105'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"urgent":{"type":"noul","noul":0.95}},"usage":{"input_tokens":278,"output_tokens":20}}'
+  recorded_at: Thu, 17 Sep 2026 18:02:54 GMT
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":"I was charged twice for my subscription.","model":"jev-latest","questions":{"route":{"type":"choice","instructions":"Which
+        team?","criteria":{"billing":"Payments","technical":"Bugs"}}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:02:55 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '192'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b0892fa972579b6c084a2bccb28d
+      X-Envoy-Upstream-Service-Time:
+      - '91'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"route":{"type":"choice","choice":"billing","confidence":1.0,"probabilities":{"technical":0.0,"billing":1.0}}},"usage":{"input_tokens":312,"output_tokens":31}}'
+  recorded_at: Thu, 17 Sep 2026 18:02:55 GMT
+recorded_with: VCR 6.4.0

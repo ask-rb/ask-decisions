@@ -1,0 +1,51 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":{"output":"On branch main\nnothing to commit, working tree
+        clean","tool_arguments":{"command":"git status"}},"model":"jev-latest","questions":{"leaks_secret":{"type":"noul","instructions":"Does
+        this output contain a secret, credential, private key, or access token?"},"failure_class":{"type":"choice","instructions":"What
+        kind of failure is this?","criteria":{"no_failure":"The command succeeded
+        or produced normal output","transient":"A temporary error — network timeout,
+        rate limit, DNS hiccup. Safe to retry unchanged.","environment":"A missing
+        dependency, wrong version, port in use, or wrong permissions on a file. Fix
+        the environment before retrying.","code_bug":"A type error, syntax error,
+        assertion failure, or test failure in the code itself. The code must change.","permission":"Access
+        denied, insufficient privileges. Do not retry without elevated permissions.","user_error":"Bad
+        invocation, wrong arguments, or incorrect usage by the caller."}}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.0
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 18:02:49 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '316'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b08918217e67b93872d46be43925
+      X-Envoy-Upstream-Service-Time:
+      - '81'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"leaks_secret":{"type":"noul","noul":0.01},"failure_class":{"type":"choice","choice":"no_failure","confidence":1.0,"probabilities":{"environment":0.0,"no_failure":1.0,"transient":0.0,"code_bug":0.0,"user_error":0.0,"permission":0.0}}},"usage":{"input_tokens":510,"output_tokens":83}}'
+  recorded_at: Thu, 17 Sep 2026 18:02:49 GMT
+recorded_with: VCR 6.4.0
