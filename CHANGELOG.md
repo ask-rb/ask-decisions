@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- `Ask::Decisions::Triage` — reads a message into a caller-defined lane and
+  asks the mood and whether the person wants a human, all in one request.
+  Measured against a 19-tool roster: lane-level routing was right 19/20 where
+  tool-level routing was right 10/16 — the tools overlapped, and a lane is the
+  part of the decision the message actually carries.
+
+### Changed
+- `Ask::Decisions::ToolRouter` takes `criteria:` — routing-grade descriptions,
+  tool name to when to choose it — and a `limit:`. A tool's own description is
+  written for the model that already holds the tool, so two accurate
+  descriptions can still fail to separate their tools from the outside.
+- `Triage::Verdict#wants_human?` requires the probability to be *above* the
+  threshold. A noul at exactly 0.5 is the model saying it has no idea, which
+  is the one answer that must not read as consent.
+- Requires `ask-core >= 0.12.0` for the decision vocabulary.
+
 ## [0.1.0] - 2026-09-17
 
 ### Added

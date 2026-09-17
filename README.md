@@ -135,6 +135,48 @@ result.failure_class   # => "transient"
 result.advice          # => "Retry unchanged."
 ```
 
+## Triage
+
+Read a message once and answer everything a turn needs about it — which lane
+it belongs to, how the person sounds, whether they want a human. All in one
+request, so the extra questions cost no extra latency:
+
+```ruby
+triage = Ask::Decisions::Triage.new(provider, lanes: {
+  "knowledge" => "Asks about the business, its services, prices, or hours",
+  "booking"   => "Wants to book an appointment or asks what times are free",
+  "human"     => "Wants to speak to a person, or describes an emergency",
+  "close"     => "Says goodbye or is done",
+  "chat"      => "Small talk or a greeting needing no action",
+  "unclear"   => "None of these is clear; a clarifying question is needed first"
+})
+
+verdict = triage.read(message: "What time do you close on Saturdays?")
+verdict.lane        # => "knowledge"
+verdict.confidence  # => 1.0
+verdict.certain?(0.7)   # => true
+verdict.sentiment       # => 1.0 (0 = upset, 1 = neutral, 2 = warm)
+verdict.wants_human?    # => false
+```
+
+### Lanes, not tools
+
+Route to a **lane**, then let code map the lane to its tools. Measured on a
+19-tool roster, same model and same messages:
+
+| Routed to | Correct |
+|---|---|
+| one of the 19 tools | 10/16 |
+| one of 7 lanes | **19/20** |
+
+The tools overlapped — seven of them answered questions about the business,
+and which one holds the answer is found by calling them, not by reading the
+message. Routing straight to a tool asks for a distinction the message does
+not carry. A lane is the part that *is* decidable from the message alone.
+
+A reading should narrow, never grant: let the lane take tools away from a
+turn, and let the agent's own definition stay the ceiling.
+
 ## ToolRouter
 
 Routes user turns to the right tool:

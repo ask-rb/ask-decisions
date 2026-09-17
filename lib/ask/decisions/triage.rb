@@ -61,11 +61,12 @@ module Ask
           confidence >= threshold
         end
 
-        # Does the person want a person? Absent answer means we do not know,
-        # which is not a yes.
+        # Does the person want a person? An unanswered question is not a yes,
+        # and neither is a coin flip: 0.5 means the model had no idea, which
+        # is the one answer that must not read as consent.
         def wants_human?(threshold = 0.5)
           return false unless wants_human
-          wants_human >= threshold
+          wants_human > threshold
         end
 
         def to_s
