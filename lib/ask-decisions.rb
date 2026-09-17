@@ -19,6 +19,7 @@ require_relative "ask/decisions/output_judge"
 begin
   require "ask-tools"
   require_relative "ask/tools/decide"
+  require_relative "ask/decisions/mcp_helper"
 rescue LoadError
   # ask-tools not loaded — Ask::Tools::Decide unavailable
 end
