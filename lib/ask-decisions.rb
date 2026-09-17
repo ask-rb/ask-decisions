@@ -13,6 +13,9 @@ require_relative "ask/decisions/static"
 require_relative "ask/decisions/lint"
 require_relative "ask/decisions/gate"
 require_relative "ask/decisions/output_judge"
+require_relative "ask/decisions/tool_router"
+require_relative "ask/decisions/argument_resolver"
+require_relative "ask/decisions/decision_state"
 
 # The Decide tool requires ask-tools (Ask::Tool base class). Load conditionally
 # so the core gem works without a tools dependency.
