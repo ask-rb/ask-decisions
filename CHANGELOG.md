@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.2.0] - 2026-09-17
+
+### Added
+
+- **The host owns the judgement: `Gate.new(provider, questions:, thresholds:)`.**
+  The questions a gate asks are a property of the host's tools, not of the gem.
+  A booking tool and a shell tool are not dangerous for the same reason, and
+  pi-jev's questions — "is this action destructive?", "does this send local data
+  off-machine?" — say nothing useful about booking an appointment. A host now
+  asks its own: "does this commit the customer to a booking?", "does this spend
+  the owner's money?". Every question must be armed with a threshold, and a
+  question without one is refused at construction rather than armed with a bar
+  that never fires. A threshold given for one of the default questions still
+  keeps the rest of the defaults, so raising one bar stays one line.
+
+- **`OutputJudge.new(provider, questions:, advice:)`.** Same reasoning: what an
+  output *is* — a leak, a failure class, the advice to give — belongs to the
+  host. The two ids the result reads (`:leaks_secret`, `:failure_class`) stay
+  the gem's contract, and the outcome question must offer `no_failure` among its
+  criteria, because the judge runs after every judged call and not only after a
+  suspicious one; both are refused at construction when they are missing, since
+  a judge that reads nothing judges nothing, silently.
+
+- **`AgentAdapter` passes the judgement through** — `gate_questions`,
+  `output_questions`, `output_advice` — so a host configures the guards for its
+  own tools in one place.
+
+### Notes
+
+- The defaults are unchanged: with nothing supplied, a gate asks pi-jev's
+  questions with its thresholds, and the output judge judges `bash` with its
+  failure classes. Existing hosts are unaffected.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
