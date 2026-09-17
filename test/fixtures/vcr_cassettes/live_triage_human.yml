@@ -1,0 +1,51 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.typesafe.ai/v1/systemone
+    body:
+      encoding: UTF-8
+      string: '{"state":{"message":"I need to speak to a real person right now, this
+        is an emergency"},"model":"jev-latest","questions":{"lane":{"type":"choice","instructions":"Which
+        of these best describes what the person writing wants? Choose by what they
+        are asking for, not by how they phrase it.","criteria":{"knowledge":"Asks
+        about the business","human":"Wants to speak to a person, or describes an emergency","unclear":"None
+        of these is clear"}},"sentiment":{"type":"score","instructions":"How does
+        the person writing sound? Judge their mood, not the topic.","criteria":["Upset
+        or angry","Neutral","Warm or pleased"]},"wants_human":{"type":"noul","instructions":"Does
+        the person want to speak to a human rather than deal with a bot? Contact details,
+        business hours, and product questions do not count as wanting a human."}}}'
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - ask-decisions/0.1.1
+      Authorization:
+      - Bearer <TYPESAFE_API_KEY>
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 17 Sep 2026 22:20:26 GMT
+      Server:
+      - istio-envoy
+      Content-Length:
+      - '412'
+      Content-Type:
+      - application/json
+      X-Typesafe-Request-Id:
+      - req_01a0b174f4d777149b416df65f038e8e
+      X-Envoy-Upstream-Service-Time:
+      - '92'
+    body:
+      encoding: UTF-8
+      string: '{"model":"jev-1.13.0","answers":{"lane":{"type":"choice","choice":"human","confidence":1.0,"probabilities":{"knowledge":0.0,"unclear":0.0,"human":1.0}},"sentiment":{"type":"score","score":0.0,"confidence":0.99,"legend":{"0":"Upset
+        or angry","1":"Neutral","2":"Warm or pleased"},"probabilities":{"0":1.0,"1":0.0,"2":0.0}},"wants_human":{"type":"noul","noul":0.96}},"usage":{"input_tokens":470,"output_tokens":73}}'
+  recorded_at: Thu, 17 Sep 2026 22:20:27 GMT
+recorded_with: VCR 6.4.0

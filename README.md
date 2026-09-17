@@ -177,16 +177,28 @@ not carry. A lane is the part that *is* decidable from the message alone.
 A reading should narrow, never grant: let the lane take tools away from a
 turn, and let the agent's own definition stay the ceiling.
 
-## ToolRouter
+### Why there is no tool router
 
-Routes user turns to the right tool:
+There was one — `ToolRouter`, a Choice over a tool roster. It is gone, because
+the measurement above is the argument against it: asked to pick one of
+nineteen tools the answer was right 10 times in 16, and asked to pick a lane
+19 times in 20. Same model, same messages.
 
-```ruby
-router = Ask::Decisions::ToolRouter.new(provider, tools: tool_roster)
-result = router.route(user_turn: "run the tests")
-result.tool         # => "bash"
-result.confidence   # => 0.92
-```
+The reason is structural, not a tuning problem. Overlapping tools cannot be
+separated by a message: which of seven knowledge tools holds the answer is
+discovered by *calling* them. Routing to a tool asks a question the message
+does not carry, so a router that answers it is guessing with confidence.
+
+What replaces it is the lane plus code:
+
+- the lane withholds the tools the turn cannot need,
+- the lane's pre-read fetches what the turn will obviously ask for,
+- and the model chooses within the narrow roster, where choosing is a
+  decision it can actually make — because it can see the candidates' results.
+
+If you do need a decider to pick a tool, the roster it picks from has to be
+small and disjoint — a handful of tools a message can actually distinguish.
+If it is not, the fix is a narrower lane or a pre-read, not a better prompt.
 
 ## ConfidencePolicy
 

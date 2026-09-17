@@ -12,8 +12,7 @@ module Ask
     # along in the same request.
     #
     # The caller owns *what* to ask — which options, in what words. This owns
-    # asking it once and handing back the answers. `ToolRouter` and `Triage`
-    # are both façades over it.
+    # asking it once and handing back the answers.
     #
     #   reader = Ask::Decisions::Reader.new(
     #     provider,

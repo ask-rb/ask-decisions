@@ -147,31 +147,36 @@ class Ask::Decisions::LiveTest < Minitest::Test
     end
   end
 
-  # --- ToolRouter ---
+  # --- Triage ---
 
-  def test_router_selects_tool
-    VCR.use_cassette("live_router_tool") do
-      tools = [
-        { name: "bash", description: "Run a shell command" },
-        { name: "read", description: "Read a file" },
-        { name: "web_search", description: "Search the web" }
-      ]
-      router = Ask::Decisions::ToolRouter.new(@provider, tools: tools)
-      result = router.route(user_turn: "run the tests")
-      assert result.call_tool? || result.answer_directly?
-      assert result.tool
+  def test_triage_reads_a_lane
+    VCR.use_cassette("live_triage_lane") do
+      triage = Ask::Decisions::Triage.new(@provider, lanes: {
+        "knowledge" => "Asks about the business, its services, prices, or hours",
+        "booking" => "Wants to book an appointment or asks what times are free",
+        "human" => "Wants to speak to a person, or describes an emergency",
+        "unclear" => "None of these is clear"
+      })
+      verdict = triage.read(message: "What time do you close on Saturdays?")
+
+      assert_equal "knowledge", verdict.lane
+      assert verdict.certain?, "expected a confident read, got #{verdict}"
+      assert_in_delta 1.0, verdict.sentiment, 0.5
+      refute verdict.wants_human?
     end
   end
 
-  def test_router_answer_directly
-    VCR.use_cassette("live_router_direct") do
-      tools = [
-        { name: "bash", description: "Run a shell command" },
-        { name: "read", description: "Read a file" }
-      ]
-      router = Ask::Decisions::ToolRouter.new(@provider, tools: tools)
-      result = router.route(user_turn: "what is 2+2?")
-      assert result.answer_directly? || result.call_tool?
+  def test_triage_hears_an_emergency
+    VCR.use_cassette("live_triage_human") do
+      triage = Ask::Decisions::Triage.new(@provider, lanes: {
+        "knowledge" => "Asks about the business",
+        "human" => "Wants to speak to a person, or describes an emergency",
+        "unclear" => "None of these is clear"
+      })
+      verdict = triage.read(message: "I need to speak to a real person right now, this is an emergency")
+
+      assert_equal "human", verdict.lane
+      assert verdict.wants_human?
     end
   end
 

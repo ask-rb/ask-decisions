@@ -4,7 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.1.0] - 2026-09-18
+## [Unreleased]
+
+### Removed
+
+- **`Ask::Decisions::ToolRouter` — a router that picks one of N tools from the
+  message alone.** It is gone because the measurement below is the argument
+  against it: routing to a tool was right 10/16 where routing to a lane was
+  right 19/20, on the same roster with the same model. Overlapping tools
+  cannot be separated by a message — which of seven knowledge tools holds the
+  answer is discovered by calling them — so a router answering that question
+  is guessing with confidence. The lane withholds the tools a turn cannot
+  need and the model chooses within the narrow roster, where it can see the
+  candidates' results.
+
+  Nothing in the ecosystem called it: not ask-agent, not ask-anychat, not any
+  app. Take this as the cheap moment — the class has no users yet.
+
+## [0.1.1] - 2026-09-18
 
 The first release, so everything here is new. It is a decision layer for the
 ask-rb ecosystem: ask Jev (or any System One model) typed questions and get
@@ -15,7 +32,7 @@ decide.
 
 - `Ask::Decisions::Reader` — asks a described set of options as one Choice,
   with anything else the caller needs riding along in the same request.
-  `ToolRouter` and `Triage` are façades over it.
+  `Triage` is a façade over it.
 - `Ask::Decisions::Triage` — reads a message into a caller-defined lane and
   asks the mood and whether the person wants a human, all in one request.
   Measured against a 19-tool roster: lane-level routing was right 19/20 where
