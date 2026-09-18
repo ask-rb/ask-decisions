@@ -81,6 +81,7 @@ module Ask
         questions = build_questions(pairs, pinned)
         batch = batch_and_execute(state, questions)
         decisions = extract_decisions(batch, pairs)
+        mark_pinned_pairs(decisions, pairs, pinned)
         pruned = apply_decisions(messages, decisions, pinned)
         stats = compute_stats(messages, pruned, decisions)
 
@@ -145,18 +146,13 @@ module Ask
       end
 
       # First message and the most recent +preserve_recent+ messages are pinned.
-      # Pinned messages are never removed, but their tool calls are still
-      # evaluated by Jev — a recent tool result can still be irrelevant.
+      # Pinned messages are never removed, and a pair living entirely inside
+      # them is never scored — Jev does not see pinned content.
       def compute_pinned(messages)
         pinned = Set.new([0])
         start = [messages.size - @preserve_recent, 1].max
         (start...messages.size).each { |i| pinned.add(i) }
         pinned
-      end
-
-      # Whether a message index is safe to remove (not pinned).
-      def removable?(idx, pinned)
-        !pinned.include?(idx)
       end
 
       # ── State ────────────────────────────────────────────────────────
@@ -276,6 +272,19 @@ module Ask
 
       # ── Decisions ────────────────────────────────────────────────────
 
+      # A pair whose call and result both live in pinned messages was never
+      # scored. Record that as its own action so the stats describe Jev's
+      # work, not the pinning.
+      def mark_pinned_pairs(decisions, pairs, pinned)
+        pairs.each do |pair|
+          next unless pinned.include?(pair[:call_msg_idx]) && pinned.include?(pair[:result_msg_idx])
+
+          if (decision = decisions[pair[:call_id]])
+            decision[:action] = :pinned
+          end
+        end
+      end
+
       def extract_decisions(batch, pairs)
         decisions = {}
         pairs.each do |pair|
@@ -312,6 +321,9 @@ module Ask
         pairs = build_pairs(messages)
         remove_indices = Set.new
         truncate_indices = {}
+        # call_id => true when the call survives although its result does not
+        # (a :drop whose result is pinned downgrades to keeping the call).
+        dropped_results = Set.new
 
         pairs.each do |pair|
           decision = decisions[pair[:call_id]]
@@ -319,13 +331,24 @@ module Ask
 
           case decision[:action]
           when :drop
-            # Only remove messages that are not pinned.
-            if removable?(pair[:call_msg_idx], pinned)
-              remove_indices.add(pair[:call_msg_idx])
+            call_pinned = pinned.include?(pair[:call_msg_idx])
+            result_pinned = pinned.include?(pair[:result_msg_idx])
+
+            if call_pinned || result_pinned
+              # A result is never left without its call, and a pinned message
+              # is never removed. A drop touching a pinned message keeps the
+              # pair — the call verbatim, the result truncated to its head.
+              if result_pinned
+                decision[:action] = :keep
+              else
+                truncate_indices[pair[:result_msg_idx]] = pair[:call]
+                decision[:action] = :truncate
+              end
+              next
             end
-            if removable?(pair[:result_msg_idx], pinned)
-              remove_indices.add(pair[:result_msg_idx])
-            end
+
+            remove_indices.add(pair[:result_msg_idx])
+            dropped_results.add(pair[:call_id])
           when :truncate
             truncate_indices[pair[:result_msg_idx]] = pair[:call]
           end
@@ -337,8 +360,26 @@ module Ask
           if truncate_indices[idx]
             truncate_message(msg, truncate_indices[idx])
           else
-            msg
+            prune_dropped_calls(msg, dropped_results)
           end
+        end
+      end
+
+      # A drop removes the tool result message; the call itself leaves the
+      # assistant message that carried it. A message survives when it has text
+      # or surviving calls — it is removed only when the drop empties it.
+      def prune_dropped_calls(msg, dropped_results)
+        return msg unless msg[:tool_calls] && dropped_results.any?
+
+        surviving = msg[:tool_calls].reject { |tc| dropped_results.include?(tc[:id]) }
+        return msg if surviving.size == msg[:tool_calls].size
+
+        if surviving.empty? && msg[:content].to_s.empty?
+          nil
+        elsif surviving.empty?
+          msg.except(:tool_calls)
+        else
+          msg.merge(tool_calls: surviving)
         end
       end
 
@@ -364,7 +405,8 @@ module Ask
           kept: action_counts[:keep] || 0,
           truncated: action_counts[:truncate] || 0,
           dropped: action_counts[:drop] || 0,
-          tool_pairs_evaluated: decisions.size,
+          pinned: action_counts[:pinned] || 0,
+          tool_pairs_evaluated: decisions.size - (action_counts[:pinned] || 0),
           chars_before: original_chars,
           chars_after: pruned_chars,
           reduction_ratio: original_chars > 0 ? (1.0 - pruned_chars.to_f / original_chars) : 0.0

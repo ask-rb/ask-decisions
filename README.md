@@ -213,6 +213,31 @@ policy.evaluate(tool: "bash", confidence: 0.6).action   # => :act
 policy.evaluate(tool: "rm", confidence: 0.8).action      # => :review
 ```
 
+## Compactor
+
+Decision-based conversation compaction. Summaries are lossy — a file path,
+an exact error, a one-time constraint can vanish. The Compactor never
+rewrites anything: Jev scores every tool call and result, and the irrelevant
+ones are dropped or truncated. Everything kept stays verbatim.
+
+```ruby
+compactor = Ask::Decisions::Compactor.new(provider, preserve_recent: 6)
+result = compactor.compact(session.messages)
+
+result.messages          # => pruned conversation
+result.stats             # => { kept: 12, dropped: 5, truncated: 3, reduction_ratio: 0.29, ... }
+result.reduction_ratio   # => 0.29
+```
+
+Three tiers per tool call: result still needed → keep both verbatim; call
+matters, result doesn't → keep the call, truncate the result to a short
+head; neither matters → remove both. The first message and the most recent
+`preserve_recent:` messages are pinned — never touched, never scored.
+
+Fail open: a failed decision call means keep the transcript and fall back to
+summarization. A compaction that doesn't happen this turn happens next turn;
+a lost constraint is gone for good.
+
 ## Calibration
 
 Measure whether confidence is trustworthy on YOUR decisions:

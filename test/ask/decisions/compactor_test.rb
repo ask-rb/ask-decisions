@@ -721,4 +721,156 @@ class Ask::Decisions::CompactorTest < Minitest::Test
     assert questions.key?("keep_call_c1"), "Question should be asked for partially pinned pair"
     assert questions.key?("keep_result_c1")
   end
+
+  # ── Multi-call messages ──────────────────────────────────────────────
+
+  def test_partial_drop_keeps_message_with_surviving_calls
+    # One assistant message carries two calls; only c2 is dropped. The
+    # message survives with c1's call — c1's result is never orphaned.
+    messages = [user_msg("Start")]
+    messages << assistant_msg("", tool_calls: [
+      tc(id: "c1", name: "Read", input: { path: "a.rb" }),
+      tc(id: "c2", name: "Bash", input: { command: "ls" })
+    ])
+    messages << tool_result_msg("content_a", tool_call_id: "c1")
+    messages << tool_result_msg("listing", tool_call_id: "c2")
+    messages << user_msg("pad 0")
+    messages << user_msg("pad 1")
+    messages << user_msg("pad 2")
+    messages << user_msg("pad 3")
+    messages << assistant_msg("Done!")
+
+    provider = provider_with_decisions(
+      "c1" => { keep_call: 0.9, keep_result: 0.9 },
+      "c2" => { keep_call: 0.1, keep_result: 0.1 }
+    )
+
+    compactor = Ask::Decisions::Compactor.new(provider, preserve_recent: 4)
+    result = compactor.compact(messages)
+
+    # c2's result is gone
+    refute result.messages.any? { |m| m[:content] == "listing" }
+    # The call message survived, still carrying c1
+    call_msg = result.messages.find { |m| m[:tool_calls] }
+    assert call_msg, "call message should survive a partial drop"
+    assert_equal ["c1"], call_msg[:tool_calls].map { |t| t[:id] }
+    # And c1's result is still there, still paired
+    assert result.messages.any? { |m| m[:content] == "content_a" }
+    assert_equal 1, result.stats[:dropped]
+  end
+
+  def test_dropping_all_calls_keeps_message_text_without_tool_calls
+    messages = [user_msg("Start")]
+    messages << assistant_msg("Let me look around.", tool_calls: [
+      tc(id: "c1", name: "Bash", input: { command: "ls" })
+    ])
+    messages << tool_result_msg("listing", tool_call_id: "c1")
+    messages << user_msg("pad 0")
+    messages << user_msg("pad 1")
+    messages << user_msg("pad 2")
+    messages << user_msg("pad 3")
+    messages << assistant_msg("Done!")
+
+    compactor = Ask::Decisions::Compactor.new(
+      provider_with_decisions("c1" => { keep_call: 0.1, keep_result: 0.1 }),
+      preserve_recent: 4
+    )
+    result = compactor.compact(messages)
+
+    # The result is gone; the assistant text stays, without the dead call
+    refute result.messages.any? { |m| m[:content] == "listing" }
+    text_msg = result.messages.find { |m| m[:content] == "Let me look around." }
+    assert text_msg, "message text should survive a full drop"
+    refute text_msg[:tool_calls], "dropped calls should leave the message"
+  end
+
+  def test_empty_call_message_fully_removed_on_drop
+    # An assistant message that held only the dropped call disappears
+    messages = [user_msg("Start")]
+    messages << assistant_msg("", tool_calls: [tc(id: "c1", name: "Bash", input: {})])
+    messages << tool_result_msg("listing", tool_call_id: "c1")
+    messages << user_msg("pad 0")
+    messages << user_msg("pad 1")
+    messages << user_msg("pad 2")
+    messages << user_msg("pad 3")
+    messages << assistant_msg("Done!")
+
+    compactor = Ask::Decisions::Compactor.new(
+      provider_with_decisions("c1" => { keep_call: 0.1, keep_result: 0.1 }),
+      preserve_recent: 4
+    )
+    result = compactor.compact(messages)
+
+    refute result.messages.any? { |m| m[:content] == "listing" }
+    assert result.messages.none? { |m| m[:tool_calls] }, "empty call message should be removed"
+  end
+
+  def test_pinned_result_survives_a_drop_verbatim
+    # Jev says drop, but the result lives in a pinned message: the pair
+    # stays verbatim and the stats say keep, not drop.
+    messages = [user_msg("Start")]
+    messages << user_msg("pad 0")
+    messages << user_msg("pad 1")
+    messages << user_msg("pad 2")
+    messages << user_msg("pad 3")
+    messages << assistant_msg("", tool_calls: [tc(id: "c1", name: "Read", input: {})])
+    messages << tool_result_msg("pinned result", tool_call_id: "c1")
+    messages << assistant_msg("Done!")
+
+    compactor = Ask::Decisions::Compactor.new(
+      provider_with_decisions("c1" => { keep_call: 0.1, keep_result: 0.1 }),
+      preserve_recent: 2
+    )
+    result = compactor.compact(messages)
+
+    assert result.messages.any? { |m| m[:content] == "pinned result" }
+    assert_equal 1, result.stats[:kept]
+    assert_equal 0, result.stats[:dropped]
+  end
+
+  def test_pinned_call_survives_a_drop_with_truncated_result
+    # The only way a call is pinned while its result is not: the call lives
+    # in message 0 (always pinned) and the result lands outside the recent
+    # tail. The call stays verbatim; the result is truncated to its head.
+    messages = [assistant_msg("", tool_calls: [tc(id: "c1", name: "Read", input: {})])]
+    messages << tool_result_msg("y" * 1000, tool_call_id: "c1")
+    messages << user_msg("pad 0")
+    messages << user_msg("pad 1")
+    messages << user_msg("pad 2")
+    messages << user_msg("pad 3")
+    messages << assistant_msg("Done!")
+
+    compactor = Ask::Decisions::Compactor.new(
+      provider_with_decisions("c1" => { keep_call: 0.1, keep_result: 0.1 }),
+      preserve_recent: 4,
+      truncate_head_chars: 50
+    )
+    result = compactor.compact(messages)
+
+    call_msg = result.messages.find { |m| m[:tool_calls] }
+    assert call_msg, "pinned call should survive"
+    truncated = result.messages.find { |m| m[:content]&.start_with?("y" * 50) }
+    assert truncated, "unpinned result of a pinned call should be truncated"
+    assert truncated[:content].include?("truncated")
+    assert_equal 1, result.stats[:truncated]
+  end
+
+  def test_fully_pinned_pair_counted_as_pinned_not_evaluated
+    messages = [user_msg("Start")]
+    messages << assistant_msg("", tool_calls: [tc(id: "c1", name: "Read", input: {})])
+    messages << tool_result_msg("content", tool_call_id: "c1")
+    messages << user_msg("Done")
+
+    # preserve_recent: 4 pins everything → c1 never scored
+    compactor = Ask::Decisions::Compactor.new(
+      provider_with_decisions("c1" => { keep_call: 0.1, keep_result: 0.1 }),
+      preserve_recent: 4
+    )
+    result = compactor.compact(messages)
+
+    assert_equal 4, result.messages.size
+    assert_equal 0, result.stats[:tool_pairs_evaluated]
+    assert_equal 1, result.stats[:pinned]
+    refute result.compacted?
+  end
 end

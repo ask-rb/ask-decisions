@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.5] - 2026-09-18
+
+### Fixed
+
+- **Dropping one of several tool calls no longer orphans its siblings.**
+  When an assistant message carried multiple tool calls and Jev dropped
+  one, the Compactor removed the whole message — including the calls Jev
+  said to keep, stranding their results without a call. A drop now removes
+  the dropped call from its message; the message survives when it still
+  has text or surviving calls, and disappears only when the drop empties it.
+- **A drop touching a pinned message keeps the compactor's promises.** A
+  result is never left without its call, and a pinned message is never
+  removed — a drop against either now downgrades to keeping the pair
+  (truncating the result when only the call is pinned), and the stats say
+  what actually happened: fully pinned pairs report `pinned` instead of
+  counting as evaluated work.
+
 ## [0.2.4] - 2026-09-18
 
 ### Fixed
