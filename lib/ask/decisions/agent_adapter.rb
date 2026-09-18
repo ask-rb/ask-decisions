@@ -179,7 +179,7 @@ module Ask
       # Build an after_tool hook that runs the OutputJudge.
       def build_output_judge_hook
         judge = @output_judge
-        lambda do |tool_call, result|
+        lambda do |tool_call, result, _context|
           output = result.respond_to?(:output) ? result.output : result.to_s
           args = tool_call.respond_to?(:arguments) ? tool_call.arguments : {}
 

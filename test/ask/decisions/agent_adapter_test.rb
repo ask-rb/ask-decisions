@@ -76,7 +76,7 @@ class Ask::Decisions::AgentAdapterTest < Minitest::Test
     hook = adapter.after_tool_hooks.first
     tool_call = ToolCallStub.new(name: "bash", arguments: {})
     result_obj = ResultStub.new(output: "On branch main\nnothing to commit")
-    result = hook.call(tool_call, result_obj)
+    result = hook.call(tool_call, result_obj, {})
 
     assert_equal :proceed, result[:action]
   end
