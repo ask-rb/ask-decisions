@@ -44,6 +44,16 @@ module Ask
         @tool_repairer = ToolRepairer.new(@provider)
       end
 
+      # Build a decision-based compactor for the current provider.
+      #
+      #   compactor = adapter.build_compactor(preserve_recent: 6)
+      #   result = compactor.compact(session.messages)
+      #   result.messages  # => pruned conversation
+      #
+      def build_compactor(**opts)
+        Ask::Decisions::Compactor.new(@provider, **opts)
+      end
+
       # Generate before_tool hooks for ask-agent.
       # Returns an array of callables that match the Hooks interface.
       def before_tool_hooks

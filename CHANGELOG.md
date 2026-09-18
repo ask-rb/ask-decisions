@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.4] - 2026-09-18
+
+### Fixed
+
+- **`resolve_provider` memoizes the provider instance.** Every call to
+  `resolve_provider` previously created a new `Typesafe` (or other provider)
+  object. In a pipeline with 10+ decision calls per cycle, this meant 10+
+  redundant allocations with identical configuration. The provider is now
+  cached for the lifetime of the process — it holds only read-only state
+  (API key, base URL, model, timeout) set once at boot.
+
 ## [0.2.3] - 2026-09-18
 
 ### Added

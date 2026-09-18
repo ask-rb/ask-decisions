@@ -28,6 +28,7 @@ require_relative "ask/decisions/reranker"
 require_relative "ask/decisions/structured_state_loop"
 require_relative "ask/decisions/calibration_report"
 require_relative "ask/decisions/calibration_harness"
+require_relative "ask/decisions/compactor"
 
 # The Decide tool requires ask-tools (Ask::Tool base class). Load conditionally
 # so the core gem works without a tools dependency.
@@ -121,13 +122,19 @@ module Ask
       end
 
       # Resolve a provider by name, raising on unknown.
+      # Memoized: the provider is stateless after boot (API key,
+      # base URL, model, timeout are all read-only), so one instance
+      # per configuration lifetime is safe and avoids redundant
+      # allocations across the pipeline.
       def resolve_provider(name)
-        klass = Ask::DecisionProvider.resolve(name)
+        @resolved_provider ||= begin
+          klass = Ask::DecisionProvider.resolve(name)
 
-        if configuration.provider_options.any?
-          klass.new(**configuration.provider_options)
-        else
-          klass.new
+          if configuration.provider_options.any?
+            klass.new(**configuration.provider_options)
+          else
+            klass.new
+          end
         end
       end
     end

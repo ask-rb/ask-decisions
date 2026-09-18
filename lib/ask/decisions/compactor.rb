@@ -145,11 +145,18 @@ module Ask
       end
 
       # First message and the most recent +preserve_recent+ messages are pinned.
+      # Pinned messages are never removed, but their tool calls are still
+      # evaluated by Jev — a recent tool result can still be irrelevant.
       def compute_pinned(messages)
         pinned = Set.new([0])
         start = [messages.size - @preserve_recent, 1].max
         (start...messages.size).each { |i| pinned.add(i) }
         pinned
+      end
+
+      # Whether a message index is safe to remove (not pinned).
+      def removable?(idx, pinned)
+        !pinned.include?(idx)
       end
 
       # ── State ────────────────────────────────────────────────────────
@@ -162,7 +169,6 @@ module Ask
         pairs.each { |p| result_index[p[:result_msg_idx]] = p }
 
         lines = messages.each_with_index.map do |msg, idx|
-          role = msg[:role] || "unknown"
           content = msg[:content].to_s
 
           if result_index[idx]
@@ -180,7 +186,6 @@ module Ask
           end
         end
 
-        goal_section = @goal ? "\n\nGoal: #{@goal}" : ""
         { conversation: lines, goal: @goal }.compact
       end
 
@@ -195,6 +200,8 @@ module Ask
       def build_questions(pairs, pinned)
         questions = {}
         pairs.each do |pair|
+          # Skip pairs where both the call and result live in pinned messages.
+          # Pinned messages are never touched — Jev does not score them.
           next if pinned.include?(pair[:call_msg_idx]) && pinned.include?(pair[:result_msg_idx])
 
           call_id = pair[:call_id]
@@ -312,8 +319,13 @@ module Ask
 
           case decision[:action]
           when :drop
-            remove_indices.add(pair[:call_msg_idx])
-            remove_indices.add(pair[:result_msg_idx])
+            # Only remove messages that are not pinned.
+            if removable?(pair[:call_msg_idx], pinned)
+              remove_indices.add(pair[:call_msg_idx])
+            end
+            if removable?(pair[:result_msg_idx], pinned)
+              remove_indices.add(pair[:result_msg_idx])
+            end
           when :truncate
             truncate_indices[pair[:result_msg_idx]] = pair[:call]
           end
@@ -342,7 +354,7 @@ module Ask
       # ── Stats ────────────────────────────────────────────────────────
 
       def compute_stats(original, pruned, decisions)
-        action_counts = decisions.values.tally { |d| d[:action] }
+        action_counts = decisions.values.map { |d| d[:action] }.tally
         original_chars = original.sum { |m| m[:content].to_s.length }
         pruned_chars = pruned.sum { |m| m[:content].to_s.length }
 
