@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.3] - 2026-09-18
+
+### Added
+
+- **`Ask::Decisions::ThresholdJudge`** — binary accept/reject judge for
+  simple gate decisions. Runs a single Noul question and thresholds the
+  result. Use this when you need "does this pass?" without the full
+  rubric of `QualityJudge`. Returns a `ThresholdVerdict` with `passed?`,
+  `noul`, and `confidence`.
+
 ## [0.2.2] - 2026-09-18
 
 ### Fixed

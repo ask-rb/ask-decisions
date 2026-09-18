@@ -117,3 +117,85 @@ has strength 0.46 (strong yes). A noul of 0.51 has strength 0.01 (uncertain).
 - Add a `none` / `other` option to Choice questions so the model can reject all options
   rather than guessing
 - **Don't** ask for counting, arithmetic, or date comparisons — those belong in code
+
+## Integration pattern (Rails)
+
+The standard integration follows a three-layer architecture: **decide** → **act** → **fallback**.
+
+### 1. Configure in an initializer
+
+```ruby
+# config/initializers/ask_decisions.rb
+Rails.application.config.after_initialize do
+  key = begin
+    Ask::Auth.resolve([:typesafe, :api_key], :typesafe_api_key)
+  rescue Ask::Auth::MissingCredential
+    nil
+  end
+
+  Ask::Decisions.configure do |config|
+    config.default_provider = :typesafe
+    config.default_model = ENV.fetch("TYPESAFE_MODEL", "jev-latest")
+    config.api_key = key
+    config.timeout = ENV.fetch("TYPESAFE_TIMEOUT", "2.5").to_f
+  end
+end
+```
+
+### 2. Build a fail-open decisions module
+
+```ruby
+module Decisions
+  class << self
+    def available?
+      Ask::Decisions.configuration.api_key.present?
+    end
+
+    def evaluate_review(findings:, criteria:, task_context: "")
+      return nil unless available?
+
+      judge = Ask::Decisions::QualityJudge.new(provider)
+      verdict = judge.evaluate(
+        request: criteria.to_json,
+        response: findings.to_json,
+        rubric: { correctness: "...", security: "..." },
+        threshold: 2.5
+      )
+      verdict.accepted? ? :accept : :revise
+    rescue => e
+      Rails.logger.warn("Decisions.evaluate_review failed: #{e.message}")
+      nil
+    end
+
+    private
+
+    def provider
+      Ask::Decisions.resolve_provider(Ask::Decisions.configuration.default_provider)
+    end
+  end
+end
+```
+
+### 3. Integrate with fallback
+
+```ruby
+def evaluate_criteria(findings, criteria)
+  # Try Jev first
+  jev = Decisions.evaluate_review(findings: findings, criteria: criteria)
+  return jev == :accept if jev
+
+  # Mechanical fallback
+  case criteria["auto_approve_if"]
+  when "no_critical" then findings.none? { |f| f["severity"] == "critical" }
+  when "no_findings" then findings.empty?
+  else findings.empty?
+  end
+end
+```
+
+### Key properties
+
+- **Fail-open**: no key, timeout, or error → returns nil → fallback runs
+- **One call, many questions**: batch all decisions in a single request (~100ms)
+- **Compact state**: small JSON hash, never raw transcripts
+- **Confidence thresholds**: code owns the pass/review/block boundaries
