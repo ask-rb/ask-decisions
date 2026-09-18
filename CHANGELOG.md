@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.2] - 2026-09-18
+
+### Fixed
+
+- **A confidence of exactly 1.0 lands in the top band of
+  `CalibrationReport#summarize`.** The bands were half-open at both ends
+  (`min <= confidence < max`), so the surest answer a decider can give — 1.0,
+  and in practice the most common one — belonged to no band at all. A report
+  written for setting a threshold was quietly dropping the decisions that most
+  justify one. The top band is now inclusive of 1.0.
+
 ## [0.2.1] - 2026-09-17
 
 ### Added

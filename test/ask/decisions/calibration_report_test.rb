@@ -25,6 +25,18 @@ class Ask::Decisions::CalibrationReportTest < Minitest::Test
     assert summary.by_confidence.any? { |b| b[:range] == "0.5–0.7" }
   end
 
+  # The surest answer there is has to be in the report: a confidence of exactly
+  # 1.0 fell out of every band while the upper bound was exclusive.
+  def test_a_certain_decision_lands_in_the_top_band
+    report = Ask::Decisions::CalibrationReport.new
+    report.record(decision_id: "q", confidence: 1.0, predicted: "a", outcome: "a")
+
+    top = report.summarize.by_confidence.find { |b| b[:range] == "0.9–1.0" }
+
+    assert_equal 1, top[:count]
+    assert_equal 1.0, top[:avg_confidence]
+  end
+
   def test_by_decision_id
     report = Ask::Decisions::CalibrationReport.new
     report.record(decision_id: "route", confidence: 0.9, predicted: "a", outcome: "a")

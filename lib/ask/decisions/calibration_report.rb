@@ -125,9 +125,14 @@ module Ask
         end
 
         # Bucket records by confidence ranges.
+        #
+        # The top band includes 1.0: a confidence of exactly 1.0 is the most
+        # common answer a calibrated decider gives, and with the upper bound
+        # exclusive it fell out of every band — so the surest decisions were
+        # the ones the report never showed.
         def bucket_by_confidence(records)
           ranges = [
-            { min: 0.9, max: 1.0, label: "0.9–1.0" },
+            { min: 0.9, max: 1.0, label: "0.9–1.0", top: true },
             { min: 0.7, max: 0.9, label: "0.7–0.9" },
             { min: 0.5, max: 0.7, label: "0.5–0.7" },
             { min: 0.3, max: 0.5, label: "0.3–0.5" },
@@ -135,7 +140,10 @@ module Ask
           ]
 
           ranges.filter_map do |range|
-            bucket = records.select { |r| r[:confidence] >= range[:min] && r[:confidence] < range[:max] }
+            bucket = records.select do |r|
+              r[:confidence] >= range[:min] &&
+                (range[:top] ? r[:confidence] <= range[:max] : r[:confidence] < range[:max])
+            end
             next if bucket.empty?
             correct = bucket.count { |r| r[:predicted] == r[:outcome] }
             acc = correct.to_f / bucket.size
