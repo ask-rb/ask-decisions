@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.6] - 2026-09-19
+
+### Fixed
+
+- **The output judge hook no longer crashes the first tool call of every
+  turn.** ask-agent hands after-tool hooks three arguments — the tool
+  call, the result, and the turn context — and the hook took two, raising
+  `ArgumentError` inside `run_after_tool` before any tool could answer.
+  A session rescued it into the generic "sorry" reply, so every chat turn
+  that reached for a tool returned nothing. The hook now accepts the
+  context it is given, and the hook test calls it the way ask-agent does.
+
 ## [0.2.5] - 2026-09-18
 
 ### Fixed
