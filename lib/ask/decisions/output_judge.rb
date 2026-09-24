@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "ask/decisions/tool_arguments"
+
 module Ask
   module Decisions
     # Post-tool-call output judge: screens the result for leaks and classifies
@@ -91,7 +93,7 @@ module Ask
         return OutputResult.empty unless @tools.include?(tool)
 
         truncated = truncate(output, @output_limit)
-        state = { output: truncated, tool_arguments: truncate_values(args, 400) }
+        state = { output: truncated, tool_arguments: truncate_values(ToolArguments.normalize(args), 400) }
 
         result = @provider.evaluate(state: state, decisions: @questions)
         OutputResult.new(result, @leak_threshold, @failure_threshold, advice: @advice)

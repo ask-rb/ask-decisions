@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "ask/decisions/tool_arguments"
+
 module Ask
   module Decisions
     # Pre-tool-call gate: judges intent before a tool executes.
@@ -112,7 +114,7 @@ module Ask
       def build_state(tool:, args:, working_dir: nil, user_message: nil)
         {
           tool: tool,
-          arguments: truncate_values(args, 400),
+          arguments: truncate_values(ToolArguments.normalize(args), 400),
           working_directory: working_dir,
           user_message: truncate_string(user_message, 1200)
         }.compact

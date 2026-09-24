@@ -111,6 +111,34 @@ class Ask::Decisions::GateTest < Minitest::Test
     verdict = gate.judge(tool: "bash", args: { command: long_cmd })
     assert verdict.passed?
   end
+
+  def test_json_encoded_tool_arguments_are_parsed_before_judging
+    observed_state = nil
+    provider = Object.new
+    provider.define_singleton_method(:evaluate) do |state:, decisions:|
+      observed_state = state
+      Ask::DecisionResult::Batch.new(answers: {})
+    end
+
+    Ask::Decisions::Gate.new(provider).judge(
+      tool: "bash", args: '{"command":"git status --short"}'
+    )
+
+    assert_equal({"command" => "git status --short"}, observed_state[:arguments])
+  end
+
+  def test_invalid_json_arguments_are_kept_as_opaque_data
+    observed_state = nil
+    provider = Object.new
+    provider.define_singleton_method(:evaluate) do |state:, decisions:|
+      observed_state = state
+      Ask::DecisionResult::Batch.new(answers: {})
+    end
+
+    Ask::Decisions::Gate.new(provider).judge(tool: "bash", args: "not-json")
+
+    assert_equal({"_raw_arguments" => "not-json"}, observed_state[:arguments])
+  end
 end
 
 # The host owns the judgement: what risk means is a property of the host's
